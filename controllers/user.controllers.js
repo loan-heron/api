@@ -167,3 +167,95 @@ exports.getAdminUsers = async (req, res) => {
         });
     }
 };
+
+exports.getProfilUserById = async (req, res) => {
+
+    try {
+        const db = req.app.locals.db;
+        const userId = req.params.id;
+        const [user] = await db.query(`SELECT id, name, email FROM users WHERE id = ${userId}`);
+
+        if (user.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Utilisateur inexistant"
+            });
+        }
+
+        res.json({
+            success: true,
+            data: user[0]
+        });
+
+    } catch (error) {
+
+        console.error("Erreur lors de la récupération de l'utilisateur :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération de l'utilisateur"
+        });
+    }
+};
+
+exports.updateProfilUserById = async (req, res) => {
+
+    try {
+        const db = req.app.locals.db;
+        const userId = req.params.id;
+        const { name, email } = req.body;
+
+        const [result] = await db.query(`UPDATE users SET name = '${name}', email = '${email}' WHERE id = ${userId}`);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Utilisateur inexistant"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Profil utilisateur mis à jour"
+        });
+
+    } catch (error) {
+
+        console.error("Erreur lors de la mise à jour du profil utilisateur :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la mise à jour du profil utilisateur"
+        });
+    }
+};
+
+exports.getCurrentUser = async (req, res) => {
+
+    try {
+        const db = req.app.locals.db;
+        const userId = req.user.id;
+        const [user] = await db.query(`SELECT id, name, email FROM users WHERE id = ${userId}`);
+
+        if (user.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Utilisateur inexistant"
+            });
+        }
+
+        res.json({
+            success: true,
+            data: user[0]
+        });
+
+    } catch (error) {
+
+        console.error("Erreur lors de la récupération de l'utilisateur :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération de l'utilisateur"
+        });
+    }
+};
