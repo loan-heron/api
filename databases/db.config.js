@@ -32,6 +32,7 @@ async function initDB() {
     });
 
     await createTables(pool);
+    //await seedData(pool);
 
     return pool;
 }

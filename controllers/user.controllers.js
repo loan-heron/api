@@ -92,21 +92,22 @@ exports.setAdminUser = async (req, res) => {
     try {
         const db = req.app.locals.db;
         const userId = req.params.id;
+        const isAdmin = req.body.is_admin;
 
-        const [is_admin] = await db.query(`SELECT is_admin FROM users WHERE id = ${userId}`);
+        const [user] = await db.query(`SELECT id FROM users WHERE id = ${userId}`);
 
-        if (is_admin.length === 0) {
+        if (user.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: "Utilisateur inexistant"
             });
         }
 
-        const [result] = await db.query(`UPDATE users SET is_admin = ${!is_admin[0].is_admin} WHERE id = ${userId}`);
+        const [result] = await db.query(`UPDATE users SET is_admin = ${isAdmin} WHERE id = ${userId}`);
 
         res.json({
             success: true,
-            message: "Droits administrateur mis à jour"
+            message: `L'utilisateur a été ${isAdmin ? "promu administrateur" : "rétrogradé utilisateur"}`
         });
 
     } catch (error) {
