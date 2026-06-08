@@ -17,6 +17,7 @@ router.get("/", auth, admin, logger, userController.getUsers);
 router.get("/me", auth, logger, userController.getCurrentUser);
 router.get("/profile/:id", auth, owner, logger, userController.getProfilUserById);
 router.put("/profile/:id", auth, owner, logger, userController.updateProfilUserById);
+router.put('/change-password', auth, owner, logger, userController.changePassword);
 router.get("/:id", auth, owner, logger, userController.getUserById);
 router.delete("/:id", auth, owner, logger, userController.deleteUser);
 

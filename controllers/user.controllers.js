@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+
 exports.getUsers = async (req, res) => {
 
     try {
@@ -205,13 +207,12 @@ exports.updateProfilUserById = async (req, res) => {
         const userId = req.params.id;
         const { name, email } = req.body;
 
-        const [result] = await db.query(`UPDATE users SET name = '${name}', email = '${email}' WHERE id = ${userId}`);
+        if (name !== undefined) {
+            await db.query(`UPDATE users SET name = '${name}' WHERE id = ${userId}`);
+        }
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "Utilisateur inexistant"
-            });
+        if (email !== undefined) {
+            await db.query(`UPDATE users SET email = '${email}' WHERE id = ${userId}`);
         }
 
         res.json({
@@ -256,6 +257,51 @@ exports.getCurrentUser = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Erreur lors de la récupération de l'utilisateur"
+        });
+    }
+};
+
+exports.changePassword = async (req, res) => {
+
+    try {
+        const db = req.app.locals.db;
+        const userId = req.user.id;
+        const { currentPassword, newPassword } = req.body;
+
+        const [user] = await db.query(`SELECT password FROM users WHERE id = ${userId}`);
+
+        if (user.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Utilisateur inexistant"
+            });
+        }
+
+        // Vérification du mot de passe actuel
+        const isPasswordValid = await bcrypt.compare(currentPassword, user[0].password);
+        if (!isPasswordValid) {
+            return res.status(400).json({
+                success: false,
+                message: "Mot de passe actuel incorrect"
+            });
+        }
+
+        // Mise à jour du mot de passe
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await db.query(`UPDATE users SET password = '${hashedPassword}' WHERE id = ${userId}`);
+
+        res.json({
+            success: true,
+            message: "Mot de passe mis à jour avec succès"
+        });
+
+    } catch (error) {
+
+        console.error("Erreur lors du changement de mot de passe :", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors du changement de mot de passe"
         });
     }
 };
